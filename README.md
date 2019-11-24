@@ -16,7 +16,7 @@ You can install Pile using composer:
 php composer.phar create-project bloatless/pile [my-pile-instance-name]
 ```
 
-* Point your virtual host document root to the `public` directory.
+* Point your virtual host document root to the `public` directory and rewrite ald requests to the `index.php` file.
 * Make sure the `logs` folder is writeable.
 * Create a new MySQL database using the `db_stucture.sql` file.
 * Adjust database configuration, api-keys and user-accounts in the `config/config.php` file.
