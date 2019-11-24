@@ -1,0 +1,38 @@
+{
+    "name": "bloatless/pile",
+    "description": "Dead simple centralized logging.",
+    "keywords": [
+        "logging",
+        "centralized",
+        "php"
+    ],
+    "license": "MIT",
+    "homepage": "https://bloatless.org",
+    "authors": [
+        {
+            "name": "Simon Samtleben",
+            "email": "foo@bloatless.org"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bloatless\\Pile\\": "app/"
+        }
+    },
+    "require": {
+        "php": "^7.2",
+        "bloatless/endocore": ">=0.4",
+        "bloatless/endocore-query-builder": "~0.0.1",
+        "bloatless/endocore-phtml-renderer": "~0.0.1",
+        "bloatless/endocore-basic-auth": "~0.0.1",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-create-project-cmd": [
+            "cp config/config.sample.php config/config.php"
+        ]
+    }
+}

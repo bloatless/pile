@@ -1,0 +1,9 @@
+.container {
+	margin: 0 auto;
+	max-width: 1400px;
+	padding-top: 2em;
+}
+
+summary {
+	font-size: 0.8em;
+}

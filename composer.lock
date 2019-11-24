@@ -1,0 +1,403 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "22e794bbabcec01806e42ab140b209d0",
+    "packages": [
+        {
+            "name": "bloatless/endocore",
+            "version": "v0.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore.git",
+                "reference": "bf12dc0ca399ff7783bd0b9c2f038f9a21805018"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore/zipball/bf12dc0ca399ff7783bd0b9c2f038f9a21805018",
+                "reference": "bf12dc0ca399ff7783bd0b9c2f038f9a21805018",
+                "shasum": ""
+            },
+            "require": {
+                "bloatless/endocore-http": "~0.0.1",
+                "bloatless/endocore-logger": "~0.0.1",
+                "bloatless/endocore-router": "~0.0.1",
+                "ext-json": "*",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "Bloatless Endocore is a framework designed to quickly build web applications following the Action-Domain-Responder pattern.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "action domain responder",
+                "adr",
+                "bloatless",
+                "framework"
+            ],
+            "time": "2019-11-18T19:23:40+00:00"
+        },
+        {
+            "name": "bloatless/endocore-basic-auth",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-basic-auth.git",
+                "reference": "99d55fca6382ff4ddf2a9eeac7bed6beff294fe2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-basic-auth/zipball/99d55fca6382ff4ddf2a9eeac7bed6beff294fe2",
+                "reference": "99d55fca6382ff4ddf2a9eeac7bed6beff294fe2",
+                "shasum": ""
+            },
+            "require": {
+                "bloatless/endocore-http": "~0.0.1",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Components\\BasicAuth\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "Basic authentication component for the Endocore framework.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "Authentication",
+                "bloatless",
+                "endocore",
+                "php"
+            ],
+            "time": "2019-11-16T15:13:26+00:00"
+        },
+        {
+            "name": "bloatless/endocore-http",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-http.git",
+                "reference": "d17810a19364299132c6e241c763f479d913532b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-http/zipball/d17810a19364299132c6e241c763f479d913532b",
+                "reference": "d17810a19364299132c6e241c763f479d913532b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Http\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "HTTP kernel for the Endocore framework.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "bloatless",
+                "endocore",
+                "http",
+                "php"
+            ],
+            "time": "2019-11-14T19:51:41+00:00"
+        },
+        {
+            "name": "bloatless/endocore-logger",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-logger.git",
+                "reference": "bc070eb22b00b8bea9bc6b8d3ab7a284725d94c4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-logger/zipball/bc070eb22b00b8bea9bc6b8d3ab7a284725d94c4",
+                "reference": "bc070eb22b00b8bea9bc6b8d3ab7a284725d94c4",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Components\\Logger\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "Logger component for the Endocore framework.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "bloatless",
+                "endocore",
+                "file-logger",
+                "logger",
+                "null-logger",
+                "php",
+                "psr-3"
+            ],
+            "time": "2019-11-17T14:02:00+00:00"
+        },
+        {
+            "name": "bloatless/endocore-phtml-renderer",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-phtml-renderer.git",
+                "reference": "210125f59fa435f139884f309b350abc396e2af3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-phtml-renderer/zipball/210125f59fa435f139884f309b350abc396e2af3",
+                "reference": "210125f59fa435f139884f309b350abc396e2af3",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Components\\PhtmlRenderer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "Phtml renderer component for the Endocore framework.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "bloatless",
+                "endocore",
+                "php",
+                "phtml",
+                "renderer",
+                "templating"
+            ],
+            "time": "2019-11-16T18:55:21+00:00"
+        },
+        {
+            "name": "bloatless/endocore-query-builder",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-query-builder.git",
+                "reference": "8ed1152d22033e8677f6eed5f2b4b25b40bd685f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-query-builder/zipball/8ed1152d22033e8677f6eed5f2b4b25b40bd685f",
+                "reference": "8ed1152d22033e8677f6eed5f2b4b25b40bd685f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pdo": "*",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Components\\QueryBuilder\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "A query builder for PDO MySQL.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "bloatless",
+                "mysql",
+                "pdo",
+                "php",
+                "query builder"
+            ],
+            "time": "2019-11-17T12:40:34+00:00"
+        },
+        {
+            "name": "bloatless/endocore-router",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bloatless/endocore-router.git",
+                "reference": "246b2c3de08c127c1df1fb9d0478df52fc459ff7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bloatless/endocore-router/zipball/246b2c3de08c127c1df1fb9d0478df52fc459ff7",
+                "reference": "246b2c3de08c127c1df1fb9d0478df52fc459ff7",
+                "shasum": ""
+            },
+            "require": {
+                "nikic/fast-route": "^1.3",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Bloatless\\Endocore\\Components\\Router\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Simon Samtleben",
+                    "email": "foo@bloatless.org"
+                }
+            ],
+            "description": "Router component for the Endocore framework.",
+            "homepage": "https://bloatless.org",
+            "keywords": [
+                "bloatless",
+                "endocore",
+                "php",
+                "router"
+            ],
+            "time": "2019-11-17T15:33:20+00:00"
+        },
+        {
+            "name": "nikic/fast-route",
+            "version": "v1.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nikic/FastRoute.git",
+                "reference": "181d480e08d9476e61381e04a71b34dc0432e812"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nikic/FastRoute/zipball/181d480e08d9476e61381e04a71b34dc0432e812",
+                "reference": "181d480e08d9476e61381e04a71b34dc0432e812",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35|~5.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "FastRoute\\": "src/"
+                },
+                "files": [
+                    "src/functions.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Nikita Popov",
+                    "email": "nikic@php.net"
+                }
+            ],
+            "description": "Fast request router for PHP",
+            "keywords": [
+                "router",
+                "routing"
+            ],
+            "time": "2018-02-13T20:26:39+00:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": true,
+    "prefer-lowest": false,
+    "platform": {
+        "php": "^7.2",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "platform-dev": []
+}

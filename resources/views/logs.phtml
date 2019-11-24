@@ -1,0 +1,77 @@
+<!-- extends "layouts/default" -->
+
+<form action="/" method="get">
+    <div class="form-group form-inline">
+        <select name="s" class="form-select">
+            <option value="">Select source</option>
+            <?php foreach ($sources as $source): ?>
+                <?php if (!empty($filters['source']) && $filters['source'] === $source): ?>
+                    <option selected value="<?php $this->out($source); ?>"><?php $this->out($source); ?></option>
+                <?php else: ?>
+                    <option value="<?php $this->out($source); ?>"><?php $this->out($source); ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="form-group form-inline">
+        <select name="l" class="form-select form-inline">
+            <option value="">Select level</option>
+            <?php foreach ($levels as $levelCode => $levelName): ?>
+                <?php if (!empty($filters['level']) && $filters['level'] === $levelCode): ?>
+                    <option selected value="<?php $this->out($levelCode); ?>"><?php $this->out($levelName); ?></option>
+                <?php else: ?>
+                    <option value="<?php $this->out($levelCode); ?>"><?php $this->out($levelName); ?></option>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        </select>
+    </div>
+
+    <div class="form-group form-inline">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a href="/" class="btn btn-primary">Clear</a>
+    </div>
+</form>
+
+
+<div class="columns mt-2">
+    <div class="column col-2"><strong>Source</strong></div>
+    <div class="column col-1"><strong>Type</strong></div>
+    <div class="column col-2"><strong>Time</strong></div>
+    <div class="column col-7"><strong>Message</strong></div>
+</div>
+<div class="divider"></div>
+
+<?php foreach ($logs as $i => $log): ?>
+    <div class="columns">
+        <div class="column col-2"><?php $this->out($log->source); ?></div>
+        <div class="column col-1"><?php $this->out($log->level_name); ?></div>
+        <div class="column col-2"><?php $this->out($log->created_at); ?></div>
+        <div class="column col-7"><?php echo mb_strimwidth($log->message, 0, 80, '&hellip;'); ?></div>
+    </div>
+
+    <details>
+        <summary class="text-primary c-hand">Details</summary>
+        <strong>Message:</strong>
+        <pre class="code"><code><?php $this->out($log->message, false); ?></code></pre>
+        <?php if (!empty($log->context)): ?>
+            <strong>Context:</strong>
+            <pre class="code"><code><?php print_r($log->context); ?></code></pre>
+        <?php endif; ?>
+        <?php if (!empty($log->extra)): ?>
+            <strong>Extra:</strong>
+            <pre class="code"><code><?php print_r($log->extra); ?></code></pre>
+        <?php endif; ?>
+    </details>
+    <div class="divider"></div>
+<?php endforeach; ?>
+
+<?php if (count($pagination) > 1): ?>
+    <ul class="pagination">
+        <?php foreach ($pagination as $page => $link): ?>
+            <li class="page-item <?php echo ($current_page === $page) ? 'active' : ''; ?>">
+                <a href="<?php $this->out($link); ?>"><?php $this->out($page); ?></a>
+            </li>
+        <?php endforeach; ?>
+    </ul>
+<?php endif; ?>

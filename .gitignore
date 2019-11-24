@@ -1,0 +1,7 @@
+# PhpStorm
+.idea/
+
+# Project
+/vendor/
+/config/config.php
+
