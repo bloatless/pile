@@ -67,12 +67,10 @@ class ShowLogsAction extends Action
      */
     private function getFilters(): array
     {
-        $filters = [
-            'source' => $this->request->getParam('s', null),
-            'level' => (int) $this->request->getParam('l', 0),
+        return [
+            'source' => $this->request->getParam('s', []),
+            'level' => $this->request->getParam('l', []),
         ];
-
-        return $filters;
     }
 
     /**

@@ -237,10 +237,10 @@ class LogsDomain extends DatabaseDomain
     protected function applyFilters(SelectQueryBuilder $builder, array $filters): SelectQueryBuilder
     {
         if (!empty($filters['source'])) {
-            $builder->whereEquals('source', $filters['source']);
+            $builder->whereIn('source', $filters['source']);
         }
         if (!empty($filters['level'])) {
-            $builder->whereEquals('level', $filters['level']);
+            $builder->whereIn('level', $filters['level']);
         }
 
         return $builder;
