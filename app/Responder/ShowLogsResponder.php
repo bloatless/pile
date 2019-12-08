@@ -37,8 +37,7 @@ class ShowLogsResponder extends HtmlResponder
             'sources' => $data['sources'] ?? [],
             'levels' => $data['levels'] ?? [],
             'filters' => $data['filters'] ?? [],
-            'current_page' => $data['pagination_data']['current'],
-            'pagination' => $this->providePaginationLinks($request, $data['pagination_data']),
+            'pagination' => $this->providePagination($request, $data['pagination_data']),
         ]);
 
         return $this->found(['body' => $body]);
@@ -51,20 +50,36 @@ class ShowLogsResponder extends HtmlResponder
      * @param array $paginationData
      * @return array
      */
-    protected function providePaginationLinks(Request $request, array $paginationData): array
+    protected function providePagination(Request $request, array $paginationData): array
     {
         $requestUri = $request->getRequestUri();
         $urlQuery = parse_url($requestUri, PHP_URL_QUERY);
         $urlQuery = $urlQuery ?? '';
         parse_str($urlQuery, $params);
 
-        $pages = ceil($paginationData['total'] / $paginationData['limit']);
-        $paginationLinks = [];
-        for ($i = 1; $i <= $pages; $i++) {
-            $params['page'] = $i;
-            $paginationLinks[$i] = '/?' . http_build_query($params);
+        $pages = (int) ceil($paginationData['total'] / $paginationData['limit']);
+        $current = (int) $paginationData['current'];
+        $pagination = [
+            'pages' => $pages,
+            'total' => (int) $paginationData['total'],
+            'current' => $current,
+        ];
+
+        if ($pages >= 1) {
+            $pagination['first'] = '/?' . http_build_query(['page' => 1]);
+            $pagination['last'] = '/?' . http_build_query(['page' => $pages]);
+        }
+        if ($pages >= 4) {
+            $pagination['prev'] = '';
+            if ($current > 1) {
+                $pagination['prev'] = '/?' . http_build_query(['page' => $current - 1]);
+            }
+            $pagination['next'] = '';
+            if ($current < $pages) {
+                $pagination['next'] = '/?' . http_build_query(['page' => $current + 1]);
+            }
         }
 
-        return $paginationLinks;
+        return $pagination;
     }
 }
