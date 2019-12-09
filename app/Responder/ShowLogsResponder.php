@@ -66,17 +66,15 @@ class ShowLogsResponder extends HtmlResponder
         ];
 
         if ($pages >= 1) {
-            $pagination['first'] = '/?' . http_build_query(['page' => 1]);
-            $pagination['last'] = '/?' . http_build_query(['page' => $pages]);
-        }
-        if ($pages >= 4) {
+            $pagination['first'] = '/?' . http_build_query(array_merge($params, ['page' => 1]));
+            $pagination['last'] = '/?' . http_build_query(array_merge($params, ['page' => $pages]));
             $pagination['prev'] = '';
             if ($current > 1) {
-                $pagination['prev'] = '/?' . http_build_query(['page' => $current - 1]);
+                $pagination['prev'] = '/?' . http_build_query(array_merge($params, ['page' => $current - 1]));
             }
             $pagination['next'] = '';
             if ($current < $pages) {
-                $pagination['next'] = '/?' . http_build_query(['page' => $current + 1]);
+                $pagination['next'] = '/?' . http_build_query(array_merge($params, ['page' => $current + 1]));
             }
         }
 
