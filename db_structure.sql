@@ -11,3 +11,6 @@ CREATE TABLE `logs` (
   PRIMARY KEY (`log_id`),
   KEY `isld_idx` (`log_id`,`source`,`level`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE INDEX level_idx USING BTREE ON logs (`level`,level_name);
+CREATE INDEX source_idx USING BTREE ON logs (source);
