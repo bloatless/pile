@@ -2,25 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Bloatless\Pile\Responder;
+namespace Bloatless\Pile\Actions\Website;
 
-use Bloatless\Endocore\Http\Request;
-use Bloatless\Endocore\Http\Response;
-use Bloatless\Endocore\Responder\HtmlResponder;
-use Bloatless\Endocore\Components\PhtmlRenderer\Factory as RendererFactory;
+use Bloatless\Endocore\Core\Http\Request;
+use Bloatless\Endocore\Core\Http\Response;
+use Bloatless\Endocore\Domain\Payload;
+use Bloatless\Pile\Actions\PhtmlResponder;
 
-class ShowLogsResponder extends HtmlResponder
+class ShowLogsResponder extends PhtmlResponder
 {
-    /**
-     * @var \Bloatless\Endocore\Components\PhtmlRenderer\PhtmlRenderer $renderer
-     */
-    protected $renderer;
 
-    public function __construct(array $config)
-    {
-        $this->renderer = (new RendererFactory($config))->makeRenderer();
-        parent::__construct($config);
-    }
+    protected string $view = 'logs';
 
     /**
      * Renders the "logs" page and returns response.
@@ -30,17 +22,14 @@ class ShowLogsResponder extends HtmlResponder
      * @return Response
      * @throws \Bloatless\Endocore\Components\PhtmlRenderer\TemplatingException
      */
-    public function __invoke(Request $request, array $data): Response
+    public function __invoke(Request $request, Payload $payload): Response
     {
-        $body = $this->renderer->render('logs', [
-            'logs' => $data['logs'] ?? [],
-            'sources' => $data['sources'] ?? [],
-            'levels' => $data['levels'] ?? [],
-            'filters' => $data['filters'] ?? [],
-            'pagination' => $this->providePagination($request, $data['pagination_data']),
-        ]);
+        $payload['pagination'] = $this->providePagination($request, $payload['pagination_data']);
+        $this->response->setBody(
+            $this->renderer->render($this->view, $payload->asArray())
+        );
 
-        return $this->found(['body' => $body]);
+        return $this->response;
     }
 
     /**
