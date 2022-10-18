@@ -20,13 +20,10 @@
         }
     },
     "require": {
-        "php": "^7.2",
-        "bloatless/endocore": ">=0.4",
-        "bloatless/endocore-query-builder": "~0.0.1",
-        "bloatless/endocore-phtml-renderer": "~0.0.1",
-        "bloatless/endocore-basic-auth": "~0.0.1",
+        "php": "^8.0",
         "ext-json": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "bloatless/endocore": "v0.5.0.x-dev"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

@@ -1,29 +1,34 @@
 <?php
-
+/**
+ * This file bootstraps/creates you application. Normally there is no need to change this file, but if you want to
+ * inject own/other classes this is would be a good place to start.
+ */
 require_once __DIR__ . '/../vendor/autoload.php';
+
+use Bloatless\Endocore\Application;
 
 try {
     // include config files:
     $config = require_once __DIR__ . '/../config/config.php';
-    $routes = require_once __DIR__ . '/../routes/default.php';
-
-    // init dependencies:
-    $loggerFactory = new \Bloatless\Endocore\Components\Logger\Factory($config);
-    $request = new \Bloatless\Endocore\Http\Request($_GET, $_POST, $_SERVER);
-    $router = new \Bloatless\Endocore\Components\Router\Router($routes);
-    $logger = $loggerFactory->makeFileLogger();
-    $exceptionHandler = new \Bloatless\Endocore\Exception\ExceptionHandler($config, $logger, $request);
 
     // create application:
-    $app = new \Bloatless\Endocore\Application(
-        $config,
-        $request,
-        $router,
-        $logger,
-        $exceptionHandler
+    $app = new Application(__DIR__ . '/../');
+
+    // register app components
+    $app->addComponent(
+        \Bloatless\Endocore\Components\BasicAuth\BasicAuth::class,
+        \Bloatless\Endocore\Components\BasicAuth\BasicAuthFactory::class
+    );
+    $app->addComponent(
+        \Bloatless\Endocore\Components\Database\Database::class,
+        \Bloatless\Endocore\Components\Database\DatabaseFactory::class
+    );
+    $app->addComponent(
+        \Bloatless\Endocore\Components\PhtmlRenderer\PhtmlRenderer::class,
+        \Bloatless\Endocore\Components\PhtmlRenderer\PhtmlRendererFactory::class
     );
 
     return $app;
-} catch (\Exception $e) {
-    exit('Error: ' . $e->getMessage());
+} catch (\Throwable $e) {
+    exit(sprintf('Error: %s (%s:%d)', $e->getMessage(), $e->getFile(), $e->getLine()));
 }

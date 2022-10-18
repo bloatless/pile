@@ -5,45 +5,19 @@ declare(strict_types=1);
 namespace Bloatless\Pile\Domains;
 
 use Bloatless\Endocore\Components\BasicAuth\BasicAuth;
-use Bloatless\Endocore\Components\BasicAuth\Factory as AuthFactory;
-use Bloatless\Endocore\Components\Logger\LoggerInterface;
-use Bloatless\Endocore\Http\Request;
-use Bloatless\Endocore\Http\Response;
+use Bloatless\Endocore\Core\Http\Request;
+use Bloatless\Endocore\Core\Http\Response;
 
 class AuthDomain
 {
     /**
-     * @var array $config
+     * @var BasicAuth $basicAuthService
      */
-    protected $config;
+    protected BasicAuth $basicAuthService;
 
-    /**
-     * @var LoggerInterface $logger
-     */
-    protected $logger;
-
-    /**
-     * @var BasicAuth $basicAuth
-     */
-    protected $basicAuth = null;
-
-    public function __construct(array $config, LoggerInterface $logger)
+    public function __construct(BasicAuth $basicAuthService)
     {
-        $this->config = $config;
-        $this->logger = $logger;
-    }
-
-    /**
-     * Checks if given API-Key is valid.
-     *
-     * @param string $apiKey
-     * @return bool
-     */
-    public function apiKeyIsValid(string $apiKey): bool
-    {
-        $validKeys = $this->config['auth']['api_keys'] ?? [];
-
-        return in_array($apiKey, $validKeys);
+        $this->basicAuthService = $basicAuthService;
     }
 
     /**
@@ -54,33 +28,30 @@ class AuthDomain
      */
     public function requestIsAuthorized(Request $request): bool
     {
-        return $this->povideAuth()->isAuthenticated($request);
+        return $this->basicAuthService->isAuthenticated($request);
     }
 
     /**
-     * Renerates and returns a auth-request response.
+     * Generates and returns a auth-request response.
      *
      * @return Response
      */
     public function getRequestAuthResponse(): Response
     {
-        return $this->povideAuth()->requestAuthorization();
+        return $this->basicAuthService->requestAuthorization();
     }
 
     /**
-     * Provides a basic-auth instance.
+     * Checks if given API-Key is valid.
      *
-     * @return BasicAuth
+     * @param string $apiKey
+     * @return bool
      */
-    protected function povideAuth(): BasicAuth
+    public function apiKeyIsValid(string $apiKey): bool
     {
-        if (!empty($this->basicAuth)) {
-            return $this->basicAuth;
-        }
+        $config = include __DIR__ . '/../../config/config.php';
+        $validKeys = $config['auth']['api_keys'] ?? [];
 
-        $authFactory = new AuthFactory($this->config);
-        $this->basicAuth = $authFactory->makeAuth();
-
-        return $this->basicAuth;
+        return in_array($apiKey, $validKeys);
     }
 }

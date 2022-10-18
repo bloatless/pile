@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Pile\Domains;
 
-use Bloatless\Endocore\Components\QueryBuilder\QueryBuilder\SelectQueryBuilder;
+use Bloatless\Endocore\Components\Database\QueryBuilder\SelectQueryBuilder;
 
 class LogsDomain extends DatabaseDomain
 {
@@ -126,11 +126,10 @@ class LogsDomain extends DatabaseDomain
      *
      * @param array $logData
      * @return int
-     * @throws \Bloatless\Endocore\Components\QueryBuilder\Exception\DatabaseException
      */
     public function storeLogData(array $logData): int
     {
-        return $this->db->makeInsert()->into('logs')->row($logData);
+        return $this->database->makeInsert()->into('logs')->row($logData);
     }
 
     /**
@@ -143,7 +142,6 @@ class LogsDomain extends DatabaseDomain
      * @param string $orderBy
      * @param string $orderDirection
      * @return array
-     * @throws \Bloatless\Endocore\Components\QueryBuilder\Exception\DatabaseException
      */
     public function getLogData(
         array $cols = ['*'],
@@ -153,7 +151,7 @@ class LogsDomain extends DatabaseDomain
         string $orderBy = 'log_id',
         string $orderDirection = 'desc'
     ): array {
-        $builder = $this->db->makeSelect()->from('logs');
+        $builder = $this->database->makeSelect()->from('logs');
         $builder = $this->applyFilters($builder, $filters);
         $logs = $builder
             ->orderBy($orderBy, $orderDirection)
@@ -178,15 +176,41 @@ class LogsDomain extends DatabaseDomain
         return $logs;
     }
 
+    public function getLogStats(array $filters = []): array
+    {
+        $statement = "
+            SELECT 
+                strftime('%Y-%m-%d', created_at) as `day`, 
+                SUM(IIF(level = 100 , 1, 0 )) as `debug`,
+                SUM(IIF(level = 200 , 1, 0 )) as `info`,
+                SUM(IIF(level = 250 , 1, 0 )) as `notice`,
+                SUM(IIF(level = 300 , 1, 0 )) as `warning`,
+                SUM(IIF(level = 400 , 1, 0 )) as `error`,
+                SUM(IIF(level = 500 , 1, 0 )) as `critical`,
+                SUM(IIF(level = 550 , 1, 0 )) as `alert`,
+                SUM(IIF(level = 600 , 1, 0 )) as `emergency`,
+                count(*) as `total`
+            FROM logs
+            WHERE created_at > :from 
+                AND created_at < :to
+            GROUP BY strftime('%Y-%m-%d', created_at);
+        ";
+        $bindings = [
+            'from' => $filters['from'],
+            'to' => $filters['to'],
+        ];
+
+        return $this->database->makeRaw()->prepare($statement, $bindings)->get();
+    }
+
     /**
      * Fetches a distinct list of error-levels from the logs table.
      *
      * @return array
-     * @throws \Bloatless\Endocore\Components\QueryBuilder\Exception\DatabaseException
      */
     public function getErrorLevelList(): array
     {
-        $levels = $this->db->makeSelect()
+        $levels = $this->database->makeSelect()
             ->from('logs')
             ->distinct()
             ->cols(['level', 'level_name'])
@@ -199,11 +223,10 @@ class LogsDomain extends DatabaseDomain
      * Fetches a distinct list of sources from the logs table.
      *
      * @return array
-     * @throws \Bloatless\Endocore\Components\QueryBuilder\Exception\DatabaseException
      */
     public function getSourcesList(): array
     {
-        $levels = $this->db->makeSelect()
+        $levels = $this->database->makeSelect()
             ->from('logs')
             ->distinct()
             ->cols(['source'])
@@ -217,11 +240,10 @@ class LogsDomain extends DatabaseDomain
      *
      * @param array $filters
      * @return int
-     * @throws \Bloatless\Endocore\Components\QueryBuilder\Exception\DatabaseException
      */
     public function getLogsTotal(array $filters = []): int
     {
-        $builder = $this->db->makeSelect()->from('logs');
+        $builder = $this->database->makeSelect()->from('logs');
         $builder = $this->applyFilters($builder, $filters);
 
         return $builder->count();
