@@ -191,8 +191,8 @@ class LogsDomain extends DatabaseDomain
                 SUM(CASE WHEN level = 600 THEN 1 ELSE 0 END) as `emergency`,
                 count(*) as `total`
             FROM logs
-            WHERE created_at >= :from 
-                AND created_at <= :to
+            WHERE strftime('%Y-%m-%d', created_at) >= :from 
+                AND strftime('%Y-%m-%d', created_at) <= :to
             GROUP BY strftime('%Y-%m-%d', created_at);
         ";
         $bindings = [
