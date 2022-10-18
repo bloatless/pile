@@ -12,4 +12,9 @@ return [
         'pattern' => '/api/v1/log',
         'handler' => 'Bloatless\Pile\Actions\Api\StoreLogAction',
     ],
+    'get_log_stats' => [
+        'method' => 'GET',
+        'pattern' => '/api/v1/logstats',
+        'handler' => 'Bloatless\Pile\Actions\Api\GetLogStatsAction',
+    ],
 ];
