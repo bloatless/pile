@@ -181,18 +181,18 @@ class LogsDomain extends DatabaseDomain
         $statement = "
             SELECT 
                 strftime('%Y-%m-%d', created_at) as `day`, 
-                SUM(IIF(level = 100 , 1, 0 )) as `debug`,
-                SUM(IIF(level = 200 , 1, 0 )) as `info`,
-                SUM(IIF(level = 250 , 1, 0 )) as `notice`,
-                SUM(IIF(level = 300 , 1, 0 )) as `warning`,
-                SUM(IIF(level = 400 , 1, 0 )) as `error`,
-                SUM(IIF(level = 500 , 1, 0 )) as `critical`,
-                SUM(IIF(level = 550 , 1, 0 )) as `alert`,
-                SUM(IIF(level = 600 , 1, 0 )) as `emergency`,
+                SUM(CASE WHEN level = 100 THEN 1 ELSE 0 END) as `debug`,
+                SUM(CASE WHEN level = 200 THEN 1 ELSE 0 END) as `info`,
+                SUM(CASE WHEN level = 250 THEN 1 ELSE 0 END) as `notice`,
+                SUM(CASE WHEN level = 300 THEN 1 ELSE 0 END) as `warning`,
+                SUM(CASE WHEN level = 400 THEN 1 ELSE 0 END) as `error`,
+                SUM(CASE WHEN level = 500 THEN 1 ELSE 0 END) as `critical`,
+                SUM(CASE WHEN level = 550 THEN 1 ELSE 0 END) as `alert`,
+                SUM(CASE WHEN level = 600 THEN 1 ELSE 0 END) as `emergency`,
                 count(*) as `total`
             FROM logs
-            WHERE created_at > :from 
-                AND created_at < :to
+            WHERE created_at >= :from 
+                AND created_at <= :to
             GROUP BY strftime('%Y-%m-%d', created_at);
         ";
         $bindings = [
