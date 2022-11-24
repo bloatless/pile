@@ -9,3 +9,4 @@ CREATE TABLE "logs" (
     "extra" text,
     "created_at" datetime
 );
+CREATE INDEX logs_idx ON logs (log_id,source,level,created_at);
