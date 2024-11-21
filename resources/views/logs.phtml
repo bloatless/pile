@@ -1,110 +1,127 @@
-{% extends('layouts/default') %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Logs</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="/css/spectre.min.css">
+    <link rel="stylesheet" href="/css/pile.css">
+</head>
 
-<div class="columns">
-    <div class="column col-3">
-        <form action="/" method="get">
+<body>
 
-            <ul class="menu">
-                <li class="divider" data-content="Source"></li>
-                <li class="menu-item">
-                    <?php foreach ($sources as $source): ?>
-                        <label class="form-checkbox">
-                            <?php if (in_array($source, $filters['source'])): ?>
-                                <input type="checkbox" name="s[]" value="{{ $source }}" checked />
-                            <?php else: ?>
-                                <input type="checkbox" name="s[]" value="{{ $source }}" />
-                            <?php endif; ?>
-                            <i class="form-icon"></i> {{ $source }}
-                        </label>
-                    <?php endforeach; ?>
-                </li>
+    <div class="container">
 
-                <li class="divider" data-content="Level"></li>
-                <li class="menu-item">
-                    <?php foreach ($levels as $levelCode => $levelName): ?>
-                        <label class="form-checkbox">
-                            <?php if (in_array($levelCode, $filters['level'])): ?>
-                                <input type="checkbox" name="l[]" value="{{ $levelCode }}" checked />
-                            <?php else: ?>
-                                <input type="checkbox" name="l[]" value="{{ $levelCode }}" />
-                            <?php endif; ?>
-                            <i class="form-icon"></i> {{ $levelName }}
-                        </label>
-                    <?php endforeach; ?>
-                </li>
+        <div class="columns">
+            <div class="column col-3">
+                <form action="/" method="get">
 
-                <li class="menu-item">
-                    <div class="form-group form-inline">
-                        <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="/" class="btn btn-primary">Clear</a>
-                    </div>
-                </li>
-            </ul>
-        </form>
-    </div>
-    <div class="column col-9">
-        <div class="columns mt-2">
-            <div class="column col-2"><strong>Source</strong></div>
-            <div class="column col-1"><strong>Type</strong></div>
-            <div class="column col-2"><strong>Time</strong></div>
-            <div class="column col-7"><strong>Message</strong></div>
-        </div>
-        <div class="divider"></div>
+                    <ul class="menu">
+                        <li class="divider" data-content="Source"></li>
+                        <li class="menu-item">
+                            <?php foreach ($sources as $source): ?>
+                                <label class="form-checkbox">
+                                    <?php if (in_array($source, $filters['source'])): ?>
+                                        <input type="checkbox" name="s[]" value="<?php echo htmlentities($source); ?>" checked />
+                                    <?php else: ?>
+                                        <input type="checkbox" name="s[]" value="<?php echo htmlentities($source); ?>" />
+                                    <?php endif; ?>
+                                    <i class="form-icon"></i> <?php echo htmlentities($source); ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </li>
 
-        <?php foreach ($logs as $i => $log): ?>
-            <div class="columns">
-                <div class="column col-2">{{ $log->source }}</div>
-                <div class="column col-1">
-                    <small>
-                    <?php if($log->level >= 400): ?>
-                        <span class="label label-rounded label-error">{{ $log->level_name }}</span>
-                    <?php elseif ($log->level >= 250): ?>
-                        <span class="label label-rounded label-warning">{{ $log->level_name }}</span>
-                    <?php else: ?>
-                        <span class="label label-rounded label-default">{{ $log->level_name }}</span>
-                    <?php endif; ?>
-                    </small>
-                </div>
-                <div class="column col-2">{{ $log->created_at }}</div>
-                <div class="column col-7"><?php echo htmlentities(mb_strimwidth($log->message, 0, 72, '…')); ?></div>
+                        <li class="divider" data-content="Level"></li>
+                        <li class="menu-item">
+                            <?php foreach ($levels as $levelCode => $levelName): ?>
+                                <label class="form-checkbox">
+                                    <?php if (in_array($levelCode, $filters['level'])): ?>
+                                        <input type="checkbox" name="l[]" value="<?php echo htmlentities($levelCode); ?>" checked />
+                                    <?php else: ?>
+                                        <input type="checkbox" name="l[]" value="<?php echo htmlentities($levelCode); ?>" />
+                                    <?php endif; ?>
+                                    <i class="form-icon"></i> <?php echo htmlentities($levelName); ?>
+                                </label>
+                            <?php endforeach; ?>
+                        </li>
+
+                        <li class="menu-item">
+                            <div class="form-group form-inline">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="/" class="btn btn-primary">Clear</a>
+                            </div>
+                        </li>
+                    </ul>
+                </form>
             </div>
+            <div class="column col-9">
+                <div class="columns mt-2">
+                    <div class="column col-2"><strong>Source</strong></div>
+                    <div class="column col-1"><strong>Type</strong></div>
+                    <div class="column col-2"><strong>Time</strong></div>
+                    <div class="column col-7"><strong>Message</strong></div>
+                </div>
+                <div class="divider"></div>
 
-            <details>
-                <summary class="text-primary c-hand">Details</summary>
-                <strong>Message:</strong>
-                <pre class="code"><code>{{ $log->message, false }}</code></pre>
-                <?php if (!empty($log->context)): ?>
-                    <strong>Context:</strong>
-                    <pre class="code"><code><?php print_r($log->context); ?></code></pre>
-                <?php endif; ?>
-                <?php if (!empty($log->extra)): ?>
-                    <strong>Extra:</strong>
-                    <pre class="code"><code><?php print_r($log->extra); ?></code></pre>
-                <?php endif; ?>
-            </details>
-            <div class="divider"></div>
-        <?php endforeach; ?>
+                <?php foreach ($logs as $i => $log): ?>
+                    <div class="columns">
+                        <div class="column col-2"><?php echo htmlentities($log->source); ?></div>
+                        <div class="column col-1">
+                            <small>
+                            <?php if($log->level >= 400): ?>
+                                <span class="label label-rounded label-error"><?php echo htmlentities($log->level_name); ?></span>
+                            <?php elseif ($log->level >= 250): ?>
+                                <span class="label label-rounded label-warning"><?php echo htmlentities($log->level_name); ?></span>
+                            <?php else: ?>
+                                <span class="label label-rounded label-default"><?php echo htmlentities($log->level_name); ?></span>
+                            <?php endif; ?>
+                            </small>
+                        </div>
+                        <div class="column col-2"><?php echo htmlentities($log->created_at); ?></div>
+                        <div class="column col-7"><?php echo htmlentities(mb_strimwidth($log->message, 0, 72, '…')); ?></div>
+                    </div>
 
-        <?php if ($pagination['pages'] > 1): ?>
-            <ul class="pagination">
-                <li class="page-item <?php echo ($pagination['current'] === 1) ? 'disabled' : ''; ?>">
-                    <a href="{{ $pagination['first'] }}">First</a>
-                </li>
-                <?php if (isset($pagination['prev'])): ?>
-                    <li class="page-item <?php echo (empty($pagination['prev'])) ? 'disabled' : ''; ?>">
-                        <a href="{{ $pagination['prev'] }}">Prev</a>
-                    </li>
-                <?php endif; ?>
-                <?php if (isset($pagination['next'])): ?>
-                    <li class="page-item <?php echo (empty($pagination['next'])) ? 'disabled' : ''; ?>">
-                        <a href="{{ $pagination['next'] }}">Next</a>
-                    </li>
-                <?php endif; ?>
+                    <details>
+                        <summary class="text-primary c-hand">Details</summary>
+                        <strong>Message:</strong>
+                        <pre class="code"><code><?php echo htmlentities($log->message, false); ?></code></pre>
+                        <?php if (!empty($log->context)): ?>
+                            <strong>Context:</strong>
+                            <pre class="code"><code><?php print_r($log->context); ?></code></pre>
+                        <?php endif; ?>
+                        <?php if (!empty($log->extra)): ?>
+                            <strong>Extra:</strong>
+                            <pre class="code"><code><?php print_r($log->extra); ?></code></pre>
+                        <?php endif; ?>
+                    </details>
+                    <div class="divider"></div>
+                <?php endforeach; ?>
 
-                <li class="page-item <?php echo ($pagination['current'] === $pagination['pages']) ? 'disabled' : ''; ?>">
-                    <a href="{{ $pagination['last'] }}">Last</a>
-                </li>
-            </ul>
-        <?php endif; ?>
+                <?php if ($pagination['pages'] > 1): ?>
+                    <ul class="pagination">
+                        <li class="page-item <?php echo ($pagination['current'] === 1) ? 'disabled' : ''; ?>">
+                            <a href="<?php echo htmlentities($pagination['first']); ?>">First</a>
+                        </li>
+                        <?php if (isset($pagination['prev'])): ?>
+                            <li class="page-item <?php echo (empty($pagination['prev'])) ? 'disabled' : ''; ?>">
+                                <a href="<?php echo htmlentities($pagination['prev']); ?>">Prev</a>
+                            </li>
+                        <?php endif; ?>
+                        <?php if (isset($pagination['next'])): ?>
+                            <li class="page-item <?php echo (empty($pagination['next'])) ? 'disabled' : ''; ?>">
+                                <a href="<?php echo htmlentities($pagination['next']); ?>">Next</a>
+                            </li>
+                        <?php endif; ?>
+
+                        <li class="page-item <?php echo ($pagination['current'] === $pagination['pages']) ? 'disabled' : ''; ?>">
+                            <a href="<?php echo htmlentities($pagination['last']); ?>">Last</a>
+                        </li>
+                    </ul>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
-</div>
+
+</body>
+</html>

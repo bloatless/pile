@@ -1,9 +1,5 @@
 <?php
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-
 $pathToConfig = __DIR__ . '/../config/config.php';
 
 if (!file_exists($pathToConfig)) {
