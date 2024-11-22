@@ -41,7 +41,8 @@ class Pile
     private const string CONTENT_TYPE_HTML = 'html';
     private const string CONTENT_TYPE_JSON = 'json';
 
-    public function __construct(array $config) {
+    public function __construct(array $config)
+    {
         $this->config = $config;
     }
 
@@ -53,7 +54,6 @@ class Pile
     {
         // @todo Remove composer (?)
         // @todo adjust config.sample
-        // @todo optimize error messages / error output
         // @todo cleanup
 
         try {
@@ -62,7 +62,7 @@ class Pile
             $requestUri = $server['REQUEST_URI'] ?? '';
             $action = $this->route($requestUri, $requestMethod);
             $this->dispatch($action, $request, $server);
-        } catch (\Exception|\Throwable $e) {
+        } catch (\Exception | \Throwable $e) {
             $this->sendErrorResponse($e);
         }
     }
@@ -78,8 +78,8 @@ class Pile
         if (
             empty($dbConfig['dsn'])
             || !array_key_exists('username', $dbConfig)
-            || !array_key_exists('password', $dbConfig))
-        {
+            || !array_key_exists('password', $dbConfig)
+        ) {
             throw new PileException('Error: Invalid database configuration. Check config file.');
         }
         $this->dbConfig = $dbConfig;
@@ -148,7 +148,7 @@ class Pile
                 break;
             case 'storeLog':
                 $this->contentType = self::CONTENT_TYPE_JSON;
-                if ($this->apiRequestIsAuthorized($server) === false)  {
+                if ($this->apiRequestIsAuthorized($server) === false) {
                     throw new HttpUnauthorizedException();
                 }
 
@@ -196,7 +196,7 @@ class Pile
         ]);
 
         // display response
-        echo $html;
+        $this->sendResponse($html);
     }
 
     protected function handleStoreLogRequest(): void
@@ -430,8 +430,10 @@ class Pile
         }
 
         // check if datetime is valid
-        if (!empty($attributes['datetime'])
-            && \DateTime::createFromFormat('Y-m-d H:i:s', $attributes['datetime']) === false) {
+        if (
+            !empty($attributes['datetime'])
+            && \DateTime::createFromFormat('Y-m-d H:i:s', $attributes['datetime']) === false
+        ) {
             return false;
         }
 
@@ -484,12 +486,12 @@ class Pile
         $wheres = [];
         $bindings = [];
         if (!empty($filters['source'])) {
-            $placeholders = str_repeat ('?, ',  count($filters['source']) - 1) . '?';
+            $placeholders = str_repeat('?, ', count($filters['source']) - 1) . '?';
             $wheres[] = "`source` IN ($placeholders)";
             $bindings = $filters['source'];
         }
         if (!empty($filters['level'])) {
-            $placeholders = str_repeat ('?, ',  count($filters['level']) - 1) . '?';
+            $placeholders = str_repeat('?, ', count($filters['level']) - 1) . '?';
             $wheres[] = "`level` IN ($placeholders)";
             $bindings = array_merge($bindings, $filters['level']);
         }
@@ -559,8 +561,13 @@ class Pile
     // View/Preparation Logic
     // -----------------------
 
-    private function getPagination(string $urlPath, int $itemsTotal, int $itemsPerPage, int $currentPage, array $filters): array
-    {
+    private function getPagination(
+        string $urlPath,
+        int $itemsTotal,
+        int $itemsPerPage,
+        int $currentPage,
+        array $filters
+    ): array {
         $pages = (int) ceil($itemsTotal / $itemsPerPage);
         $pagination = [
             'pages' => $pages,
