@@ -8,6 +8,7 @@ use Bloatless\Pile\Exceptions\DatabaseException;
 use Bloatless\Pile\Exceptions\HttpBadRequestException;
 use Bloatless\Pile\Exceptions\HttpMethodNotAllowedException;
 use Bloatless\Pile\Exceptions\HttpNotFoundException;
+use Bloatless\Pile\Exceptions\HttpUnauthorizedException;
 use Bloatless\Pile\Exceptions\PileException;
 
 class Pile
@@ -22,6 +23,8 @@ class Pile
 
     private array $config;
 
+    private string $contentType = self::CONTENT_TYPE_HTML;
+
     private \PDO $pdo;
 
     private array $validLevels = [
@@ -35,6 +38,9 @@ class Pile
         600 => 'emergency',
     ];
 
+    private const string CONTENT_TYPE_HTML = 'html';
+    private const string CONTENT_TYPE_JSON = 'json';
+
     public function __construct(array $config) {
         $this->config = $config;
     }
@@ -45,8 +51,9 @@ class Pile
 
     public function __invoke($request, $server): void
     {
-        // @todo Error handling
         // @todo Remove composer (?)
+        // @todo adjust config.sample
+        // @todo optimize error messages / error output
         // @todo cleanup
 
         try {
@@ -55,27 +62,8 @@ class Pile
             $requestUri = $server['REQUEST_URI'] ?? '';
             $action = $this->route($requestUri, $requestMethod);
             $this->dispatch($action, $request, $server);
-        } catch (HttpBadRequestException $e) {
-            // @todo handle 400
-            echo "HttpBadRequestException: <pre>"; print_r($e); exit;
-        } catch (HttpNotFoundException $e) {
-            // @todo handle 404
-            echo "HttpNotFoundException: <pre>"; print_r($e); exit;
-        } catch (HttpMethodNotAllowedException $e) {
-            // @todo handle 405
-            echo "HttpMethodNotAllowedException: <pre>"; print_r($e); exit;
-        } catch (DatabaseException $e) {
-            // @todo handle 500
-            echo "DatabaseException: <pre>"; print_r($e); exit;
-        } catch (PileException $e) {
-            // @todo handle 500
-            echo "PileException: <pre>"; print_r($e); exit;
-        } catch (\Exception $e) {
-            // @todo handle 500
-            echo "Exception: <pre>"; print_r($e); exit;
-        } catch (\Throwable $e) {
-            // @todo handle 500
-            echo "Throwable: <pre>"; print_r($e); exit;
+        } catch (\Exception|\Throwable $e) {
+            $this->sendErrorResponse($e);
         }
     }
 
@@ -151,6 +139,7 @@ class Pile
     {
         switch ($action) {
             case 'showLogs':
+                $this->contentType = self::CONTENT_TYPE_HTML;
                 if ($this->webRequestIsAuthorized($server) === false) {
                     $this->sendRequestAuthorizationResponse();
                 }
@@ -158,8 +147,9 @@ class Pile
                 $this->handleShowLogsRequest($request, $server);
                 break;
             case 'storeLog':
+                $this->contentType = self::CONTENT_TYPE_JSON;
                 if ($this->apiRequestIsAuthorized($server) === false)  {
-                    $this->sendJsonResponse('', 401);
+                    throw new HttpUnauthorizedException();
                 }
 
                 $this->handleStoreLogRequest();
@@ -176,22 +166,25 @@ class Pile
     protected function handleShowLogsRequest(array $request, array $server): void
     {
         // collect data from request
-        $requestUri = $server['REQUEST_URI'] ?? '';
+        $urlPath = (string) parse_url($server['REQUEST_URI'], PHP_URL_PATH);
         $filters = $this->getFiltersFromRequest($request);
         $page = $this->getPageFromRequest($request);
         $offset = (($page - 1) * $this->logsPerPage);
 
-        // @todo Add some input-data validation
-
-        // collect data required to generate response
+        // connect to database
         $this->establishDbConnection($this->dbConfig);
+
+        // validate input data
+        $sources = $this->getSourcesList();
+        $this->validateFilters($filters, $sources);
+
+        // collect additional data required to generate response
         $logsTotal = $this->getLogsTotal($filters);
         $logs = $this->getLogs($filters, $this->logsPerPage, $offset);
         $levels = $this->getErrorLevelList();
-        $sources = $this->getSourcesList();
 
         // prepare data for view
-        $pagination = $this->getPagination($requestUri, $logsTotal, $this->logsPerPage, $page);
+        $pagination = $this->getPagination($urlPath, $logsTotal, $this->logsPerPage, $page, $filters);
 
         // render view
         $html = $this->renderTemplate('logs.phtml', [
@@ -215,7 +208,7 @@ class Pile
 
         $logData = json_decode($rawData, true);
         if ($this->validateLogData($logData) === false) {
-            $this->sendJsonResponse("['Invalid log data']", 500);
+            throw new PileException('Invalid log data.');
         }
 
         $this->establishDbConnection($this->dbConfig);
@@ -223,7 +216,7 @@ class Pile
         $attributes = $this->preprocessLogData($logData);
         $attributes['log_id'] = $this->storeLogData($attributes);
 
-        $this->sendJsonResponse(json_encode($attributes));
+        $this->sendResponse(json_encode($attributes));
     }
 
     // -----------------------
@@ -259,17 +252,36 @@ class Pile
     // Response Logic
     // -----------------------
 
-    protected function sendRequestAuthorizationResponse(): void
+    protected function sendResponse(string $content = '', int $code = 200): void
     {
-        header('WWW-Authenticate: Basic realm="Restricted access"', true, 401);
+        switch ($this->contentType) {
+            case self::CONTENT_TYPE_JSON:
+                header('Content-Type: application/json', true, $code);
+                break;
+            case self::CONTENT_TYPE_HTML:
+                header('Content-Type: text/html; charset=utf-8', true, $code);
+                break;
+            default:
+                throw new PileException('Invalid content type in response.');
+        }
+
+        echo $content;
         exit;
     }
 
-    protected function sendJsonResponse(string $content = '', int $code = 200): void
+    protected function sendErrorResponse(\Throwable|\Exception $e): void
     {
-        header('Content-Type: application/json', true, $code);
+        $errorMessage = $e->getMessage();
+        if ($this->contentType === self::CONTENT_TYPE_JSON) {
+            $errorMessage = json_encode($errorMessage);
+        }
 
-        echo $content;
+        $this->sendResponse($errorMessage, $e->getCode());
+    }
+
+    protected function sendRequestAuthorizationResponse(): void
+    {
+        header('WWW-Authenticate: Basic realm="Restricted access"', true, 401);
         exit;
     }
 
@@ -352,6 +364,25 @@ class Pile
     // -----------------------
     // Validation Logic
     // -----------------------
+
+    protected function validateFilters(array $filters, array $sources): void
+    {
+        if (!empty($filters['source'])) {
+            foreach ($filters['source'] as $source) {
+                if (!in_array($source, $sources)) {
+                    throw new PileException('Invalid Input: source filter.');
+                }
+            }
+        }
+
+        if (!empty($filters['level'])) {
+            foreach ($filters['level'] as $level) {
+                if (!array_key_exists($level, $this->validLevels)) {
+                    throw new PileException('Invalid Input: level filter.');
+                }
+            }
+        }
+    }
 
     public function validateLogData(array $data): bool
     {
@@ -528,12 +559,8 @@ class Pile
     // View/Preparation Logic
     // -----------------------
 
-    private function getPagination(string $requestUri, int $itemsTotal, int $itemsPerPage, int $currentPage): array
+    private function getPagination(string $urlPath, int $itemsTotal, int $itemsPerPage, int $currentPage, array $filters): array
     {
-        $urlQuery = parse_url($requestUri, PHP_URL_QUERY);
-        $urlQuery = $urlQuery ?? '';
-        parse_str($urlQuery, $params);
-
         $pages = (int) ceil($itemsTotal / $itemsPerPage);
         $pagination = [
             'pages' => $pages,
@@ -545,18 +572,36 @@ class Pile
             return $pagination;
         }
 
-        $pagination['first'] = '/?' . http_build_query(array_merge($params, ['page' => 1]));
-        $pagination['last'] = '/?' . http_build_query(array_merge($params, ['page' => $pages]));
+        $pagination['first'] = $this->buildUrl($urlPath, $filters, 1);
+        $pagination['last'] = $this->buildUrl($urlPath, $filters, $pages);
         $pagination['prev'] = '';
         if ($currentPage > 1) {
-            $pagination['prev'] = '/?' . http_build_query(array_merge($params, ['page' => $currentPage - 1]));
+            $pagination['prev'] = $this->buildUrl($urlPath, $filters, $currentPage - 1);
         }
         $pagination['next'] = '';
         if ($currentPage < $pages) {
-            $pagination['next'] = '/?' . http_build_query(array_merge($params, ['page' => $currentPage + 1]));
+            $pagination['next'] = $this->buildUrl($urlPath, $filters, $currentPage + 1);
         }
 
         return $pagination;
+    }
+
+    protected function buildUrl(string $path = '/', array $filters = [], int $page = 0): string
+    {
+        $urlParams = [];
+        if (!empty($filters['source'])) {
+            $urlParams['s'] = $filters['source'];
+        }
+        if (!empty($filters['level'])) {
+            $urlParams['l'] = $filters['level'];
+        }
+        if ($page > 0) {
+            $urlParams['page'] = $page;
+        }
+
+        $query = preg_replace('/%5B[0-9]+%5D/imU', '%5B%5D', http_build_query($urlParams));
+
+        return $path . '?' . $query;
     }
 
     protected function preprocessLogData(array $logData): array
@@ -574,7 +619,7 @@ class Pile
         // set default values
         $attributes['level_name'] = $this->validLevels[$attributes['level']];
         if (!isset($attributes['datetime'])) {
-            $attributes['datetime'] = strftime('%Y-%m-%d %H:%M:%S');
+            $attributes['datetime'] = date('Y-m-d H:i:s');
         }
 
         // json encode array fields

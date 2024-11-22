@@ -6,5 +6,5 @@ namespace Bloatless\Pile\Exceptions;
 
 class HttpNotFoundException extends \Exception
 {
-
+    protected $code = 404;
 }

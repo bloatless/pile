@@ -6,5 +6,5 @@ namespace Bloatless\Pile\Exceptions;
 
 class HttpBadRequestException extends \Exception
 {
-
+    protected $code = 400;
 }

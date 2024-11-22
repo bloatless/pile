@@ -6,5 +6,5 @@ namespace Bloatless\Pile\Exceptions;
 
 class HttpMethodNotAllowedException extends \Exception
 {
-
+    protected $code = 405;
 }
