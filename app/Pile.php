@@ -10,6 +10,11 @@ use Bloatless\Pile\Exceptions\HttpMethodNotAllowedException;
 use Bloatless\Pile\Exceptions\HttpNotFoundException;
 use Bloatless\Pile\Exceptions\HttpUnauthorizedException;
 use Bloatless\Pile\Exceptions\PileException;
+use DateTime;
+use Exception;
+use PDO;
+use PDOException;
+use Throwable;
 
 class Pile
 {
@@ -25,7 +30,7 @@ class Pile
 
     private string $contentType = self::CONTENT_TYPE_HTML;
 
-    private \PDO $pdo;
+    private PDO $pdo;
 
     private array $validLevels = [
         100 => 'debug',
@@ -54,7 +59,6 @@ class Pile
     {
         // @todo Remove composer (?)
         // @todo adjust config.sample
-        // @todo cleanup
 
         try {
             $this->initConfiguration();
@@ -62,11 +66,14 @@ class Pile
             $requestUri = $server['REQUEST_URI'] ?? '';
             $action = $this->route($requestUri, $requestMethod);
             $this->dispatch($action, $request, $server);
-        } catch (\Exception | \Throwable $e) {
+        } catch (Exception | Throwable $e) {
             $this->sendErrorResponse($e);
         }
     }
 
+    /**
+     * @throws PileException
+     */
     protected function initConfiguration(): void
     {
         // validate database configuration
@@ -113,6 +120,10 @@ class Pile
         }
     }
 
+    /**
+     * @throws HttpNotFoundException
+     * @throws HttpMethodNotAllowedException
+     */
     protected function route(string $requestUri, string $requestMethod): string
     {
         $requestUri = parse_url($requestUri, PHP_URL_PATH);
@@ -135,6 +146,12 @@ class Pile
         }
     }
 
+    /**
+     * @throws DatabaseException
+     * @throws PileException
+     * @throws HttpUnauthorizedException
+     * @throws HttpBadRequestException
+     */
     protected function dispatch(string $action, array $request, array $server): void
     {
         switch ($action) {
@@ -163,6 +180,10 @@ class Pile
     // Pile Handlers
     // -----------------------
 
+    /**
+     * @throws PileException
+     * @throws DatabaseException
+     */
     protected function handleShowLogsRequest(array $request, array $server): void
     {
         // collect data from request
@@ -199,6 +220,11 @@ class Pile
         $this->sendResponse($html);
     }
 
+    /**
+     * @throws HttpBadRequestException
+     * @throws DatabaseException
+     * @throws PileException
+     */
     protected function handleStoreLogRequest(): void
     {
         $rawData = $this->getRequestBody();
@@ -261,15 +287,13 @@ class Pile
             case self::CONTENT_TYPE_HTML:
                 header('Content-Type: text/html; charset=utf-8', true, $code);
                 break;
-            default:
-                throw new PileException('Error: Invalid content type for response.');
         }
 
         echo $content;
         exit;
     }
 
-    protected function sendErrorResponse(\Throwable|\Exception $e): void
+    protected function sendErrorResponse(Throwable|Exception $e): void
     {
         $errorMessage = $e->getMessage();
         if ($this->contentType === self::CONTENT_TYPE_JSON) {
@@ -365,6 +389,9 @@ class Pile
     // Validation Logic
     // -----------------------
 
+    /**
+     * @throws PileException
+     */
     protected function validateFilters(array $filters, array $sources): void
     {
         if (!empty($filters['source'])) {
@@ -432,7 +459,7 @@ class Pile
         // check if datetime is valid
         if (
             !empty($attributes['datetime'])
-            && \DateTime::createFromFormat('Y-m-d H:i:s', $attributes['datetime']) === false
+            && DateTime::createFromFormat('Y-m-d H:i:s', $attributes['datetime']) === false
         ) {
             return false;
         }
@@ -444,6 +471,9 @@ class Pile
     // CRUD Logic
     // -----------------------
 
+    /**
+     * @throws DatabaseException
+     */
     private function establishDbConnection(array $dbConfig): void
     {
         try {
@@ -451,8 +481,8 @@ class Pile
             $username = $dbConfig['username'] ?? '';
             $password = $dbConfig['password'] ?? '';
 
-            $this->pdo = new \PDO($dsn, $username, $password);
-        } catch (\PDOException $e) {
+            $this->pdo = new PDO($dsn, $username, $password);
+        } catch (PDOException) {
             throw new DatabaseException('Error: Could not connect to database.');
         }
     }
@@ -478,7 +508,7 @@ class Pile
         $pdoStatement = $this->pdo->prepare($query['statement']);
         $pdoStatement->execute($query['bindings']);
 
-        return $pdoStatement->fetchAll(\PDO::FETCH_OBJ);
+        return $pdoStatement->fetchAll(PDO::FETCH_OBJ);
     }
 
     private function buildGetLogsQuery(bool $count, array $filters = [], int $limit = 0, int $offset = 0): array
@@ -532,7 +562,7 @@ class Pile
         $statement = "SELECT DISTINCT `source` FROM `logs`";
         $pdoStatement = $this->pdo->query($statement);
 
-        return $pdoStatement->fetchAll(\PDO::FETCH_COLUMN);
+        return $pdoStatement->fetchAll(PDO::FETCH_COLUMN);
     }
 
     public function storeLogData(array $logData): int
@@ -546,7 +576,7 @@ class Pile
         $pdoStatement->bindValue(':source', $logData['source']);
         $pdoStatement->bindValue(':message', $logData['message']);
         $pdoStatement->bindValue(':context', $logData['context']);
-        $pdoStatement->bindValue(':level', $logData['level'], \PDO::PARAM_INT);
+        $pdoStatement->bindValue(':level', $logData['level'], PDO::PARAM_INT);
         $pdoStatement->bindValue(':level_name', $logData['level_name']);
         $pdoStatement->bindValue(':channel', $logData['channel']);
         $pdoStatement->bindValue(':extra', $logData['extra']);
@@ -644,6 +674,9 @@ class Pile
         return $attributes;
     }
 
+    /**
+     * @throws PileException
+     */
     private function renderTemplate(string $templateFile, array $payload): string
     {
         $templateFile = ltrim($templateFile, '/');
