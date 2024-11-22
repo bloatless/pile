@@ -72,7 +72,7 @@ class Pile
         // validate database configuration
         $dbConfig = $this->config['db'] ?? null;
         if (empty($dbConfig) || !is_array($dbConfig)) {
-            throw new PileException('Database configuration missing. Check config file.');
+            throw new PileException('Error: Database configuration missing. Check config file.');
         }
 
         if (
@@ -80,18 +80,18 @@ class Pile
             || !array_key_exists('username', $dbConfig)
             || !array_key_exists('password', $dbConfig))
         {
-            throw new PileException('Invalid database configuration. Check config file.');
+            throw new PileException('Error: Invalid database configuration. Check config file.');
         }
         $this->dbConfig = $dbConfig;
 
         // validate auth configuration
         $authConfig = $this->config['auth'] ?? null;
         if (empty($authConfig) || !is_array($authConfig)) {
-            throw new PileException('Auth configuration missing. Check config file.');
+            throw new PileException('Error: Auth configuration missing. Check config file.');
         }
 
         if (!array_key_exists('api_keys', $authConfig) || !array_key_exists('users', $authConfig)) {
-            throw new PileException('Auth configuration is invalid. Check config file.');
+            throw new PileException('Error: Auth configuration is invalid. Check config file.');
         }
         $this->authConfig = $authConfig;
 
@@ -99,10 +99,10 @@ class Pile
         $pathViews = $this->config['path_views'] ?? null;
         $pathViews = $pathViews !== '/' ? rtrim($pathViews, '/') : '/';
         if (empty($pathViews)) {
-            throw new PileException('Path to views missing in config. Check config file.');
+            throw new PileException('Error: Path to views missing in config. Check config file.');
         }
         if (!file_exists($pathViews) || !is_dir($pathViews)) {
-            throw new PileException('Paths to views is invalid. Check config file.');
+            throw new PileException('Error: Paths to views is invalid. Check config file.');
         }
         $this->pathViews = $pathViews;
 
@@ -155,7 +155,7 @@ class Pile
                 $this->handleStoreLogRequest();
                 break;
             default:
-                throw new \Exception('Unknown Action');
+                throw new PileException('Error: Unknown Action.');
         }
     }
 
@@ -203,12 +203,12 @@ class Pile
     {
         $rawData = $this->getRequestBody();
         if (empty($rawData)) {
-            throw new HttpBadRequestException('Request body can not be empty.');
+            throw new HttpBadRequestException('Error: Request body can not be empty.');
         }
 
         $logData = json_decode($rawData, true);
         if ($this->validateLogData($logData) === false) {
-            throw new PileException('Invalid log data.');
+            throw new PileException('Error: Invalid data. Check log data format.');
         }
 
         $this->establishDbConnection($this->dbConfig);
@@ -262,7 +262,7 @@ class Pile
                 header('Content-Type: text/html; charset=utf-8', true, $code);
                 break;
             default:
-                throw new PileException('Invalid content type in response.');
+                throw new PileException('Error: Invalid content type for response.');
         }
 
         echo $content;
@@ -370,7 +370,7 @@ class Pile
         if (!empty($filters['source'])) {
             foreach ($filters['source'] as $source) {
                 if (!in_array($source, $sources)) {
-                    throw new PileException('Invalid Input: source filter.');
+                    throw new PileException('Error: Invalid source filter.');
                 }
             }
         }
@@ -378,7 +378,7 @@ class Pile
         if (!empty($filters['level'])) {
             foreach ($filters['level'] as $level) {
                 if (!array_key_exists($level, $this->validLevels)) {
-                    throw new PileException('Invalid Input: level filter.');
+                    throw new PileException('Error: Invalid level filter.');
                 }
             }
         }
@@ -451,7 +451,7 @@ class Pile
 
             $this->pdo = new \PDO($dsn, $username, $password);
         } catch (\PDOException $e) {
-            throw new DatabaseException('Could not connect to database.');
+            throw new DatabaseException('Error: Could not connect to database.');
         }
     }
 
@@ -645,7 +645,7 @@ class Pile
 
         ob_start();
         if (!file_exists($pathToTemplate)) {
-            throw new PileException('View file not found.');
+            throw new PileException('Error: View file not found.');
         }
 
         include $pathToTemplate;
