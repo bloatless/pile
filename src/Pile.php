@@ -45,6 +45,8 @@ class Pile
 
     private string $contentType = self::CONTENT_TYPE_HTML;
 
+    private array $htmlEntitiesCache = [];
+
     private PDO $pdo;
 
 
@@ -214,7 +216,6 @@ class Pile
         $urlPath = (string) parse_url($server['REQUEST_URI'], PHP_URL_PATH);
         $filters = $this->getFiltersFromRequest($request);
         $page = $this->getPageFromRequest($request);
-        $offset = (($page - 1) * $this->logsPerPage);
 
         // connect to database
         $this->establishDbConnection($this->dbConfig);
@@ -224,11 +225,13 @@ class Pile
         $this->validateFilters($filters, $sources);
 
         // collect additional data required to generate response
+        $offset = (($page - 1) * $this->logsPerPage);
         $logsTotal = $this->getLogsTotal($filters);
         $logs = $this->getLogs($filters, $this->logsPerPage, $offset);
         $levels = $this->getErrorLevelList();
 
         // prepare data for view
+        $logs = $this->prepareLogsForView($logs);
         $pagination = $this->getPagination($urlPath, $logsTotal, $this->logsPerPage, $page, $filters);
 
         // render view
@@ -614,6 +617,40 @@ class Pile
     // -----------------------
     // View/Preparation Logic
     // -----------------------
+
+    protected function prepareLogsForView(array $logs): array
+    {
+        foreach ($logs as $log) {
+            $log->context = $log->context === '[]' ? '' : $log->context;
+            $log->context = !empty($log->context) ? json_decode($log->context) : '';
+
+            $log->extra = $log->extra === '[]' ? '' : $log->extra;
+            $log->extra = !empty($log->extra) ? json_decode($log->extra) : '';
+        }
+
+        return $logs;
+    }
+
+    protected function strOut(string $input, int $maxLength = 0): string
+    {
+        if ($maxLength > 0) {
+            $input = mb_strimwidth($input, 0, $maxLength, '…');
+        }
+
+        if (isset($this->htmlEntitiesCache[$input])) {
+            return $this->htmlEntitiesCache[$input];
+        }
+
+        $encoded = htmlentities($input);
+        $this->htmlEntitiesCache[$input] = $encoded;
+
+        return $encoded;
+    }
+
+    protected function jsonOut(mixed $input): string
+    {
+        return $this->strOut(print_r($input, true));
+    }
 
     protected function getPagination(
         string $urlPath,
