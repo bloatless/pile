@@ -1,48 +1,36 @@
 <?php
 
 return [
-    'logger' => [
-        'type' => 'file',
-        'path_logs' => __DIR__ . '/../logs',
-        'min_level' => 'notice',
-    ],
+    // number of logs per page
+    'logs_per_page' => 50,
 
+    // path to template files (needs no adjustment by default)
+    'path_views' => __DIR__ . '/../resources/views',
+
+    // adjust database credentials
     'db' => [
-        // mysql db credentials
-        'connections' => [
-            'db1' => [
-                'driver' => 'sqlite',
-                'database' => __DIR__ . '/../storage/database/sample.sqlite',
-            ],
-        ],
-
-        'default_connection' => 'db1',
-    ],
-
-    'renderer' => [
-        'path_views' => __DIR__ . '/../resources/views',
-        'compile_path' => __DIR__ . '/../cache/compile',
-        'view_components' => [
-
-        ],
+        'dsn' => 'mysql:host=localhost;dbname=pile',
+        'username' => '',
+        'password' => '',
     ],
 
     'auth' => [
         // valid api keys allowed to store logs
         'api_keys' => [
-            '123123123',
+            // add api keys
+            // 'my-secrect-api-key',
+            // 'anoher-valid-api-key',
+            // ...
         ],
 
-        'backend' => 'array',
-
-        // users allowed to view logs
-        // HINT: passwords need to be generated using "password_hash" method
-        'backends' => [
-            'array' => [
-                'users' => [
-                    'foo' => '$2y$10$hJpespHOJUYzFtHIQk57OusBdwIOXz.8tUdbb9j545Meh2wmeshMm',
-                ],
-            ]
-        ]
-    ]
+        // add users allowed to login to view logs
+        // passwords need to be encrypted using password_hash method
+        // Example: php -r "echo password_hash('my-password', PASSWORD_DEFAULT);"
+        'users' => [
+            // add users
+            // 'user1' => 'password-hash1',
+            // 'user2' => 'password-hash2',
+            // ...
+        ],
+    ],
 ];

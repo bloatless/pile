@@ -18,6 +18,21 @@ use Throwable;
 
 class Pile
 {
+    private const string CONTENT_TYPE_HTML = 'html';
+
+    private const string CONTENT_TYPE_JSON = 'json';
+
+    private array $validLevels = [
+        100 => 'debug',
+        200 => 'info',
+        250 => 'notice',
+        300 => 'warning',
+        400 => 'error',
+        500 => 'critical',
+        550 => 'alert',
+        600 => 'emergency',
+    ];
+
     protected int $logsPerPage = 50;
 
     protected string $pathViews = '';
@@ -32,33 +47,23 @@ class Pile
 
     private PDO $pdo;
 
-    private array $validLevels = [
-        100 => 'debug',
-        200 => 'info',
-        250 => 'notice',
-        300 => 'warning',
-        400 => 'error',
-        500 => 'critical',
-        550 => 'alert',
-        600 => 'emergency',
-    ];
 
-    private const string CONTENT_TYPE_HTML = 'html';
-    private const string CONTENT_TYPE_JSON = 'json';
-
-    public function __construct(array $config)
-    {
-        $this->config = $config;
-    }
 
     // -----------------------
     // Main Logic
     // -----------------------
 
+    public function __construct(array $config)
+    {
+        $this->config = $config;
+        spl_autoload_register(array($this, 'registerAutoload'));
+    }
+
     public function __invoke($request, $server): void
     {
         // @todo Remove composer (?)
         // @todo adjust config.sample
+        // @todo update readme
 
         try {
             $this->initConfiguration();
@@ -69,6 +74,25 @@ class Pile
         } catch (Exception | Throwable $e) {
             $this->sendErrorResponse($e);
         }
+    }
+
+    protected function registerAutoload(): void
+    {
+        spl_autoload_register(function ($class) {
+            // only load classes in project namespace
+            $namespace = 'Bloatless\\Pile\\';
+            $len = strlen($namespace);
+            if (strncmp($namespace, $class, $len) !== 0) {
+                return;
+            }
+
+            // generate filename from classname and include file
+            $relativeClass = substr($class, $len);
+            $file = __DIR__ . '/' . str_replace('\\', '/', $relativeClass) . '.php';
+            if (file_exists($file)) {
+                require_once $file;
+            }
+        });
     }
 
     /**
@@ -249,7 +273,7 @@ class Pile
     // Request Logic
     // -----------------------
 
-    private function getFiltersFromRequest(array $request): array
+    protected function getFiltersFromRequest(array $request): array
     {
         return [
             'source' => $request['s'] ?? [],
@@ -257,14 +281,14 @@ class Pile
         ];
     }
 
-    private function getPageFromRequest(array $request): int
+    protected function getPageFromRequest(array $request): int
     {
         $page = (int) ($request['page'] ?? 1);
 
         return ($page <= 0) ? 1 : $page;
     }
 
-    private function getRequestBody(): string
+    protected function getRequestBody(): string
     {
         $body = file_get_contents('php://input');
         if ($body === false) {
@@ -313,7 +337,7 @@ class Pile
     // Authentication Logic
     // -----------------------
 
-    private function webRequestIsAuthorized(array $server): bool
+    protected function webRequestIsAuthorized(array $server): bool
     {
         $credentials = $this->getCredentialsFromRequest($server);
         if (empty($credentials['username']) || empty($credentials['password'])) {
@@ -323,7 +347,7 @@ class Pile
         return $this->validateCredentials($credentials['username'], $credentials['password']);
     }
 
-    private function getCredentialsFromRequest(array $server): array
+    protected function getCredentialsFromRequest(array $server): array
     {
         $credentials = [
             'username' => '',
@@ -355,7 +379,7 @@ class Pile
         return $credentials;
     }
 
-    private function validateCredentials(string $username, string $password): bool
+    protected function validateCredentials(string $username, string $password): bool
     {
         if (empty($this->authConfig['users'])) {
             return false;
@@ -368,7 +392,7 @@ class Pile
         return password_verify($password, $this->authConfig['users'][$username]);
     }
 
-    private function apiRequestIsAuthorized(array $server): bool
+    protected function apiRequestIsAuthorized(array $server): bool
     {
         $apiKey = (string) $server['HTTP_X_API_KEY'] ?? '';
         if ($apiKey === '') {
@@ -378,7 +402,7 @@ class Pile
         return $this->apiKeyIsValid($apiKey);
     }
 
-    private function apiKeyIsValid(string $apiKey): bool
+    protected function apiKeyIsValid(string $apiKey): bool
     {
         $validKeys = $this->authConfig['api_keys'] ?? [];
 
@@ -411,7 +435,7 @@ class Pile
         }
     }
 
-    public function validateLogData(array $data): bool
+    protected function validateLogData(array $data): bool
     {
         // check if data is of type log
         if (empty($data['data']['type']) || $data['data']['type'] !== 'log') {
@@ -474,7 +498,7 @@ class Pile
     /**
      * @throws DatabaseException
      */
-    private function establishDbConnection(array $dbConfig): void
+    protected function establishDbConnection(array $dbConfig): void
     {
         try {
             $dsn = $dbConfig['dsn'] ?? '';
@@ -487,7 +511,7 @@ class Pile
         }
     }
 
-    private function getLogsTotal(array $filters = []): int
+    protected function getLogsTotal(array $filters = []): int
     {
         // get statement
         $query = $this->buildGetLogsQuery(true, $filters);
@@ -499,7 +523,7 @@ class Pile
         return (int) $pdoStatement->fetchColumn();
     }
 
-    private function getLogs(array $filters = [], int $limit = 0, int $offset = 0): array
+    protected function getLogs(array $filters = [], int $limit = 0, int $offset = 0): array
     {
         // get statement
         $query = $this->buildGetLogsQuery(false, $filters, $limit, $offset);
@@ -511,7 +535,7 @@ class Pile
         return $pdoStatement->fetchAll(PDO::FETCH_OBJ);
     }
 
-    private function buildGetLogsQuery(bool $count, array $filters = [], int $limit = 0, int $offset = 0): array
+    protected function buildGetLogsQuery(bool $count, array $filters = [], int $limit = 0, int $offset = 0): array
     {
         $wheres = [];
         $bindings = [];
@@ -544,7 +568,7 @@ class Pile
         ];
     }
 
-    private function getErrorLevelList(): array
+    protected function getErrorLevelList(): array
     {
         $statement = "SELECT DISTINCT `level`, `level_name` FROM `logs`";
         $pdoStatement = $this->pdo->query($statement);
@@ -557,7 +581,7 @@ class Pile
         return  $levels;
     }
 
-    private function getSourcesList(): array
+    protected function getSourcesList(): array
     {
         $statement = "SELECT DISTINCT `source` FROM `logs`";
         $pdoStatement = $this->pdo->query($statement);
@@ -565,7 +589,7 @@ class Pile
         return $pdoStatement->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    public function storeLogData(array $logData): int
+    protected function storeLogData(array $logData): int
     {
         $statement = "
             INSERT INTO `logs`
@@ -591,7 +615,7 @@ class Pile
     // View/Preparation Logic
     // -----------------------
 
-    private function getPagination(
+    protected function getPagination(
         string $urlPath,
         int $itemsTotal,
         int $itemsPerPage,
@@ -677,7 +701,7 @@ class Pile
     /**
      * @throws PileException
      */
-    private function renderTemplate(string $templateFile, array $payload): string
+    protected function renderTemplate(string $templateFile, array $payload): string
     {
         $templateFile = ltrim($templateFile, '/');
         $pathToTemplate = $this->pathViews . '/' . $templateFile;
