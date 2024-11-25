@@ -14,4 +14,6 @@ require_once $appFile;
 $config = include $configFile;
 
 $pile = new \Bloatless\Pile\Pile($config);
-$pile->__invoke($_REQUEST, $_SERVER);
+$response = $pile->__invoke($_REQUEST, $_SERVER);
+
+echo $response;

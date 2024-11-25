@@ -1,3 +1,7 @@
+-- Drop Logs Table
+DROP TABLE IF EXISTS `logs`;
+
+-- Create Logs Table
 CREATE TABLE `logs` (
     `log_id` bigint(20) NOT NULL AUTO_INCREMENT,
     `source` varchar(100) NOT NULL,

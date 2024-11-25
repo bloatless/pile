@@ -1,0 +1,22 @@
+{
+  "data": {
+    "type": "log",
+    "attributes": {
+      "source": "MyProjectName",
+      "message": "Some error occoured",
+      "context": {
+        "exception": {
+          "class": "My\\Fancy\\Classname",
+          "message": "Invalid value</code><script>alert('foo');</script>",
+          "code": "42",
+          "file": "\/framework\/src\/Foo\/Bar\/Classname.php:1337"
+        }
+      },
+      "level": 400,
+      "level_name": "ERROR",
+      "channel": "dev",
+      "datetime": "2019-11-05 17:44:26",
+      "extra": []
+    }
+  }
+}

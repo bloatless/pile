@@ -61,7 +61,7 @@ class Pile
         spl_autoload_register(array($this, 'registerAutoload'));
     }
 
-    public function __invoke($request, $server): void
+    public function __invoke($request, $server): string
     {
         // @todo Remove composer (?)
         // @todo adjust config.sample
@@ -72,9 +72,10 @@ class Pile
             $requestMethod = $server['REQUEST_METHOD'];
             $requestUri = $server['REQUEST_URI'] ?? '';
             $action = $this->route($requestUri, $requestMethod);
-            $this->dispatch($action, $request, $server);
+
+            return $this->dispatch($action, $request, $server);
         } catch (Exception | Throwable $e) {
-            $this->sendErrorResponse($e);
+            return $this->sendErrorResponse($e);
         }
     }
 
@@ -129,7 +130,7 @@ class Pile
         $this->authConfig = $authConfig;
 
         // validate views path
-        $pathViews = $this->config['path_views'] ?? null;
+        $pathViews = $this->config['path_views'] ?? '';
         $pathViews = $pathViews !== '/' ? rtrim($pathViews, '/') : '/';
         if (empty($pathViews)) {
             throw new PileException('Error: Path to views missing in config. Check config file.');
@@ -178,25 +179,23 @@ class Pile
      * @throws HttpUnauthorizedException
      * @throws HttpBadRequestException
      */
-    protected function dispatch(string $action, array $request, array $server): void
+    protected function dispatch(string $action, array $request, array $server): string
     {
         switch ($action) {
             case 'showLogs':
                 $this->contentType = self::CONTENT_TYPE_HTML;
                 if ($this->webRequestIsAuthorized($server) === false) {
-                    $this->sendRequestAuthorizationResponse();
+                    return $this->sendRequestAuthorizationResponse();
                 }
 
-                $this->handleShowLogsRequest($request, $server);
-                break;
+                return $this->handleShowLogsRequest($request, $server);
             case 'storeLog':
                 $this->contentType = self::CONTENT_TYPE_JSON;
                 if ($this->apiRequestIsAuthorized($server) === false) {
                     throw new HttpUnauthorizedException();
                 }
 
-                $this->handleStoreLogRequest();
-                break;
+                return $this->handleStoreLogRequest();
             default:
                 throw new PileException('Error: Unknown Action.');
         }
@@ -210,7 +209,7 @@ class Pile
      * @throws PileException
      * @throws DatabaseException
      */
-    protected function handleShowLogsRequest(array $request, array $server): void
+    protected function handleShowLogsRequest(array $request, array $server): string
     {
         // collect data from request
         $urlPath = (string) parse_url($server['REQUEST_URI'], PHP_URL_PATH);
@@ -244,7 +243,7 @@ class Pile
         ]);
 
         // display response
-        $this->sendResponse($html);
+        return $this->sendResponse($html);
     }
 
     /**
@@ -252,7 +251,7 @@ class Pile
      * @throws DatabaseException
      * @throws PileException
      */
-    protected function handleStoreLogRequest(): void
+    protected function handleStoreLogRequest(): string
     {
         $rawData = $this->getRequestBody();
         if (empty($rawData)) {
@@ -269,7 +268,7 @@ class Pile
         $attributes = $this->preprocessLogData($logData);
         $attributes['log_id'] = $this->storeLogData($attributes);
 
-        $this->sendResponse(json_encode($attributes));
+        return $this->sendResponse(json_encode($attributes));
     }
 
     // -----------------------
@@ -305,7 +304,7 @@ class Pile
     // Response Logic
     // -----------------------
 
-    protected function sendResponse(string $content = '', int $code = 200): void
+    protected function sendResponse(string $content = '', int $code = 200): string
     {
         switch ($this->contentType) {
             case self::CONTENT_TYPE_JSON:
@@ -316,24 +315,24 @@ class Pile
                 break;
         }
 
-        echo $content;
-        exit;
+        return $content;
     }
 
-    protected function sendErrorResponse(Throwable|Exception $e): void
+    protected function sendErrorResponse(Throwable|Exception $e): string
     {
         $errorMessage = $e->getMessage();
         if ($this->contentType === self::CONTENT_TYPE_JSON) {
             $errorMessage = json_encode($errorMessage);
         }
 
-        $this->sendResponse($errorMessage, $e->getCode());
+        return $this->sendResponse($errorMessage, $e->getCode());
     }
 
-    protected function sendRequestAuthorizationResponse(): void
+    protected function sendRequestAuthorizationResponse(): string
     {
         header('WWW-Authenticate: Basic realm="Restricted access"', true, 401);
-        exit;
+
+        return 'Authorization required. Please log in.';
     }
 
     // -----------------------

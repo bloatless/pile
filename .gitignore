@@ -4,4 +4,6 @@
 # Project
 /vendor/
 /config/config.php
-
+/config/config.testing.php
+/phpunit.xml
+/.phpunit.result.cache
