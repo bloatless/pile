@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bloatless\Pile;
 
+use Bloatless\Pile\Exceptions\CommandException;
 use Bloatless\Pile\Exceptions\DatabaseException;
 use Bloatless\Pile\Exceptions\HttpBadRequestException;
 use Bloatless\Pile\Exceptions\HttpMethodNotAllowedException;
@@ -35,6 +36,8 @@ class Pile
 
     protected int $logsPerPage = 50;
 
+    protected int $keepLogsDays = 360;
+
     protected string $pathViews = '';
 
     protected array $dbConfig = [];
@@ -63,9 +66,9 @@ class Pile
 
     public function __invoke($request, $server): string
     {
-        // @todo Remove composer (?)
         // @todo adjust config.sample
         // @todo update readme
+        // @todo cleanup functionality
 
         try {
             $this->initConfiguration();
@@ -76,6 +79,27 @@ class Pile
             return $this->dispatch($action, $request, $server);
         } catch (Exception | Throwable $e) {
             return $this->sendErrorResponse($e);
+        }
+    }
+
+    public function runCommand(string $command): int
+    {
+        try {
+            $this->initConfiguration();
+
+            switch ($command) {
+                case 'cleanup':
+                    $this->handleCleanupCommand();
+                    return 0;
+                default:
+                    throw new CommandException('Unknown command.');
+            }
+        } catch (CommandException $e) {
+            echo 'Error: ' . $e->getMessage() . PHP_EOL;
+            return 1;
+        } catch (Exception | Throwable $e) {
+            printf("Error: %s (File: %s, Line: %d\n", $e->getMessage(), $e->getFile(), $e->getLine());
+            return 1;
         }
     }
 
@@ -140,10 +164,15 @@ class Pile
         }
         $this->pathViews = $pathViews;
 
-        // validate "logs per page" value
+        // validate single values
         if (array_key_exists('logs_per_page', $this->config)) {
             $logsPerPage = (int) $this->config['logs_per_page'];
-            $this->logsPerPage = $logsPerPage ?: 50;
+            $this->logsPerPage = $logsPerPage ?: $this->logsPerPage;
+        }
+
+        if (array_key_exists('keep_logs_days', $this->config)) {
+            $keepLogsDays = (int) $this->config['keep_logs_days'];
+            $this->keepLogsDays = $keepLogsDays ?: $this->keepLogsDays;
         }
     }
 
@@ -269,6 +298,19 @@ class Pile
         $attributes['log_id'] = $this->storeLogData($attributes);
 
         return $this->sendResponse(json_encode($attributes));
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    protected function handleCleanupCommand(): void
+    {
+        printf("Deleting logs older than %d days...\n", $this->keepLogsDays);
+
+        $this->establishDbConnection($this->dbConfig);
+        $rowsDeleted = $this->deleteLogsOlderThanDays($this->keepLogsDays);
+
+        printf("Done. %d rows deleted\n", $rowsDeleted);
     }
 
     // -----------------------
@@ -611,6 +653,16 @@ class Pile
         $pdoStatement->execute();
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    protected function deleteLogsOlderThanDays(int $days): int
+    {
+        $statement = 'DELETE FROM `logs` WHERE DATEDIFF(now(), created_at) > :days';
+        $pdoStatement = $this->pdo->prepare($statement);
+        $pdoStatement->bindValue(':days', $days);
+        $pdoStatement->execute();
+
+        return $pdoStatement->rowCount();
     }
 
     // -----------------------
