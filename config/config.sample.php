@@ -4,6 +4,9 @@ return [
     // number of logs per page
     'logs_per_page' => 50,
 
+    // delete old logs after n days
+    'keep_logs_days' => 360,
+
     // path to template files (needs no adjustment by default)
     'path_views' => __DIR__ . '/../resources/views',
 
