@@ -10,16 +10,15 @@
 
 ## Installation
 
-You can install Pile using composer:
+To install Pile just clone this repository to your server:
 
 ```
-php composer.phar create-project bloatless/pile [my-pile-instance-name]
+git clone https://github.com/bloatless/pile.git
 ```
 
 * Point your virtual host document root to the `public` directory and rewrite ald requests to the `index.php` file.
-* Make sure the `logs` folder is writeable.
-* Create a new MySQL database using the `db_stucture.sql` file.
-* Adjust database configuration, api-keys and user-accounts in the `config/config.php` file.
+* Create a new MySQL database and import the structure using the `db_stucture.sql` file.
+* Copy `config/config.sample.php` to `config/config.php` and adjust database configuration, api-keys and user-account settings.
 
 ## Documentation
 
@@ -58,7 +57,7 @@ code  | level name
 
 #### Using HTTP REST API
 
-Log messages can be send to your Pile instance using a simple post request:
+Log messages can be sent to your Pile instance using a simple post request:
 
 ```
 POST https://pile.yourdomain.com/api/v1/log

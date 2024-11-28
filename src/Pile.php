@@ -20,8 +20,11 @@ use Throwable;
 class Pile
 {
     private const string CONTENT_TYPE_HTML = 'html';
-
     private const string CONTENT_TYPE_JSON = 'json';
+
+    private const string COMMAND_CLEANUP = 'cleanup';
+    private const string ACTION_SHOW = 'showLogs';
+    private const string ACTION_STORE = 'storeLog';
 
     private array $validLevels = [
         100 => 'debug',
@@ -66,10 +69,6 @@ class Pile
 
     public function __invoke($request, $server): string
     {
-        // @todo adjust config.sample
-        // @todo update readme
-        // @todo cleanup functionality
-
         try {
             $this->initConfiguration();
             $requestMethod = $server['REQUEST_METHOD'];
@@ -88,7 +87,7 @@ class Pile
             $this->initConfiguration();
 
             switch ($command) {
-                case 'cleanup':
+                case self::COMMAND_CLEANUP:
                     $this->handleCleanupCommand();
                     return 0;
                 default:
@@ -190,13 +189,13 @@ class Pile
                     throw new HttpMethodNotAllowedException();
                 }
 
-                return 'showLogs';
+                return self::ACTION_SHOW;
             case '/api/v1/log':
                 if ($requestMethod !== 'POST') {
                     throw new HttpMethodNotAllowedException();
                 }
 
-                return 'storeLog';
+                return self::ACTION_STORE;
             default:
                 throw new HttpNotFoundException();
         }
@@ -211,14 +210,14 @@ class Pile
     protected function dispatch(string $action, array $request, array $server): string
     {
         switch ($action) {
-            case 'showLogs':
+            case self::ACTION_SHOW:
                 $this->contentType = self::CONTENT_TYPE_HTML;
                 if ($this->webRequestIsAuthorized($server) === false) {
                     return $this->sendRequestAuthorizationResponse();
                 }
 
                 return $this->handleShowLogsRequest($request, $server);
-            case 'storeLog':
+            case self::ACTION_STORE:
                 $this->contentType = self::CONTENT_TYPE_JSON;
                 if ($this->apiRequestIsAuthorized($server) === false) {
                     throw new HttpUnauthorizedException();
