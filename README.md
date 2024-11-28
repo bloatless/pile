@@ -97,6 +97,16 @@ If you are using [Monolog](http://github.com/Seldaek/monolog) in your project yo
 [MonoPile](https://github.com/bloatless/MonoPile) package which provides a handler and formatter for Monolog to easily
 send error-logs to your Pile instance.
 
+### Cleanup
+
+Old log entries can be regularly deleted using the cleanup script:
+
+`php cli/cleanup.php`
+
+This will delete old log entries from the database. The "lifetime" of log entries can be configured within the `config/config.php` file. 
+
+It is recommended to regularly call the cleanup script using a cronjob.
+
 ## License
 
 MIT
